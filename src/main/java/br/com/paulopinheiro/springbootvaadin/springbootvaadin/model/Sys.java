@@ -8,6 +8,7 @@ public final class Sys implements Serializable {
     private final Integer id;
     private final String country;
     private final Timestamp sunrise;
+    private final Timestamp sunset;
 
     public Sys(Integer type, Integer id, String country, Timestamp sunrise, Timestamp sunset) {
         this.type = type;
@@ -36,5 +37,4 @@ public final class Sys implements Serializable {
     public Timestamp getSunset() {
         return sunset;
     }
-    private final Timestamp sunset;
 }

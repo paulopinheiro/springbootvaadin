@@ -1,8 +1,11 @@
 package br.com.paulopinheiro.springbootvaadin.springbootvaadin.view;
 
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.controller.WeatherService;
+import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Main;
+import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Sys;
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Weather;
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.WeatherReport;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -25,7 +28,7 @@ public class MainView extends VerticalLayout {
 
     private TextField cityTextField;
     private Button queryButton;
-    private VerticalLayout dashboard = new VerticalLayout();
+    private VerticalLayout dashboard;
 
     public MainView() {
         // That shouldn't be necessary
@@ -70,6 +73,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void setUpDashboard() {
+        dashboard = new VerticalLayout();
         dashboard.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         dashboard.setWidthFull();
         add(dashboard);
@@ -77,7 +81,6 @@ public class MainView extends VerticalLayout {
 
     private void executeQuery(String city) {
         WeatherReport weatherReport = weatherService.getWeatherReport(city);
-        dashboard.removeAll();
 
         if (weatherReport!=null) {
             updateDashboard(weatherReport);
@@ -88,15 +91,22 @@ public class MainView extends VerticalLayout {
     }
 
     private void updateDashboard(WeatherReport weatherReport) {
+        dashboard.removeAll();
         Span title = new Span("Weather report for " + weatherReport.getName() +
                               " - " + weatherReport.getSys().getCountry());
         title.getStyle().set("color", "blue");
         title.getStyle().set("font-family", "Arial");
         title.getStyle().set("font-size", "48px");
         dashboard.add(title);
-
-        dashboard.add(getWeatherListLayout(weatherReport.getWeatherList()));
         
+        HorizontalLayout dashboardBody = new HorizontalLayout();
+        dashboardBody.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        
+        dashboardBody.add(getMainLayout(weatherReport.getMain()));
+        dashboardBody.add(getWeatherListLayout(weatherReport.getWeatherList()));
+        dashboardBody.add(getSysLayout(weatherReport.getSys()));
+
+        dashboard.add(dashboardBody);
     }
  
     private HorizontalLayout getWeatherListLayout(List<Weather> weatherList) {
@@ -133,5 +143,46 @@ public class MainView extends VerticalLayout {
 
         weatherLayout.add(image, weatherTextArea);
         return weatherLayout;
+    }
+
+    private HorizontalLayout getMainLayout(Main main) {
+        HorizontalLayout mainLayout = new HorizontalLayout();
+        if (main!=null) {
+            String text = "";
+            if (main.getTemp()!= null) text += "Temperature: " + main.getTemp() + "\n";
+            if (main.getPressure()!= null) text += "Pressure: " + main.getPressure() + "\n";
+            if (main.getHumidity()!=null) text += "Humidity: " + main.getHumidity() + "\n";
+            if (main.getTemp_min()!=null) text += "Temp. Min.: " + main.getTemp_min() + "\n";
+            if (main.getTemp_max()!=null) text += "Temp. Max.: " + main.getTemp_max();
+
+            TextArea mainTextArea = new TextArea();
+            mainTextArea.setTitle("Main");
+            mainTextArea.setLabel("Main");
+            mainTextArea.setValue(text);
+            mainLayout.add(mainTextArea);
+        }
+
+        return mainLayout;
+    }
+
+    private HorizontalLayout getSysLayout(Sys sys) {
+        HorizontalLayout sysLayout = new HorizontalLayout();
+
+        if (sys != null) {
+            String text="";
+            if (sys.getType()!=null) text += "Type: " + sys.getType() + "\n";
+            if (sys.getSunrise()!=null) text += "Sunrise: " + sys.getSunrise() + "\n";
+            if (sys.getSunset()!= null) text += "Sunset: " + sys.getSunset();
+
+            String title = "Sys id: " + sys.getId();
+
+            TextArea sysTextArea = new TextArea();
+            sysTextArea.setTitle(title);
+            sysTextArea.setLabel(title);
+            sysTextArea.setValue(text);
+            sysLayout.add(sysTextArea);
+        }
+
+        return sysLayout;
     }
 }
