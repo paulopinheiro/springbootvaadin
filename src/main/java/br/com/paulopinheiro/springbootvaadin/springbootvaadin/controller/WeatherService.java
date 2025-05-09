@@ -59,7 +59,7 @@ public class WeatherService {
 
     private JSONObject getJsonWeatherReport(String name) throws JSONException, IOException {
         Request request = new Request.Builder().url(WEATHERURL + "?q=" + name
-                + "&units=metrics"
+                + "&units=metric"
                 + "&APPID=" + APIKEY).build();
         Response response = client.newCall(request).execute();
         if (response.body() != null) {

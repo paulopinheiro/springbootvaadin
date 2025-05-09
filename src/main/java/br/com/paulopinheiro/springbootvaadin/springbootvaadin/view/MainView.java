@@ -5,7 +5,6 @@ import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Main;
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Sys;
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.Weather;
 import br.com.paulopinheiro.springbootvaadin.springbootvaadin.model.WeatherReport;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,6 +15,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.ui.Notification;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,9 +68,10 @@ public class MainView extends VerticalLayout {
         queryButton.addThemeVariants(ButtonVariant.LUMO_ICON);
         queryButton.setText("Query");
         queryButton.addClickListener(event -> {
-            executeQuery(this.cityTextField.getValue());
+            if (!cityTextField.getValue().equals("")) executeQuery(this.cityTextField.getValue());
+            else Notification.show("Inform the city name, please.");
         });
-        
+
         add(queryButton);
     }
 
@@ -149,11 +152,11 @@ public class MainView extends VerticalLayout {
         HorizontalLayout mainLayout = new HorizontalLayout();
         if (main!=null) {
             String text = "";
-            if (main.getTemp()!= null) text += "Temperature: " + main.getTemp() + "\n";
-            if (main.getPressure()!= null) text += "Pressure: " + main.getPressure() + "\n";
-            if (main.getHumidity()!=null) text += "Humidity: " + main.getHumidity() + "\n";
-            if (main.getTemp_min()!=null) text += "Temp. Min.: " + main.getTemp_min() + "\n";
-            if (main.getTemp_max()!=null) text += "Temp. Max.: " + main.getTemp_max();
+            if (main.getTemp()!= null) text += "Temperature: " + main.getTemp() + "°C \n";
+            if (main.getPressure()!= null) text += "Pressure: " + main.getPressure() + " hPa\n";
+            if (main.getHumidity()!=null) text += "Humidity: " + main.getHumidity() + "% \n";
+            if (main.getTemp_min()!=null) text += "Temp. Min.: " + main.getTemp_min() + "°C \n";
+            if (main.getTemp_max()!=null) text += "Temp. Max.: " + main.getTemp_max() + "°C";
 
             TextArea mainTextArea = new TextArea();
             mainTextArea.setTitle("Main");
@@ -171,8 +174,8 @@ public class MainView extends VerticalLayout {
         if (sys != null) {
             String text="";
             if (sys.getType()!=null) text += "Type: " + sys.getType() + "\n";
-            if (sys.getSunrise()!=null) text += "Sunrise: " + sys.getSunrise() + "\n";
-            if (sys.getSunset()!= null) text += "Sunset: " + sys.getSunset();
+            if (sys.getSunrise()!=null) text += "Sunrise: " + getTime(sys.getSunrise()) + "h \n";
+            if (sys.getSunset()!= null) text += "Sunset: " + getTime(sys.getSunset()) + "h";
 
             String title = "Sys id: " + sys.getId();
 
@@ -184,5 +187,9 @@ public class MainView extends VerticalLayout {
         }
 
         return sysLayout;
+    }
+
+    private static String getTime(Timestamp ts) {
+        return (new SimpleDateFormat("dd-MM-yyyy HH:mm")).format(ts.getTime()*1000);
     }
 }
