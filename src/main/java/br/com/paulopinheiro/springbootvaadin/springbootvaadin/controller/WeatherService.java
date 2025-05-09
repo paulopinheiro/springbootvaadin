@@ -33,22 +33,22 @@ public class WeatherService {
             JSONObject jsonWeatherReport = getJsonWeatherReport(cityName);
             if (jsonWeatherReport != null) {
                 System.out.println(jsonWeatherReport.toString());
-                Coord coord = getCoord(jsonWeatherReport.getJSONObject("coord"));
-                List<Weather> weatherList = getWeatherList(jsonWeatherReport.getJSONArray("weather"));
-                String base = jsonWeatherReport.getString("base");
-                Main main = getMain(jsonWeatherReport.getJSONObject("main"));
-                Integer visibility = jsonWeatherReport.getInt("visibility");
-                Wind wind = getWind(jsonWeatherReport.getJSONObject("wind"));
-                Clouds clouds = new Clouds(jsonWeatherReport.getJSONObject("clouds").getInt("all"));
-                Timestamp dt = new Timestamp(jsonWeatherReport.getLong("dt"));
-                Sys sys = getSys(jsonWeatherReport.getJSONObject("sys"));
-                Integer id = jsonWeatherReport.getInt("id");
-                String name = jsonWeatherReport.getString("name");
-                Integer cod = jsonWeatherReport.getInt("cod");
+                Coord coord = jsonWeatherReport.isNull("coord") ? null : getCoord(jsonWeatherReport.getJSONObject("coord"));
+                List<Weather> weatherList = jsonWeatherReport.isNull("weather") ? null : getWeatherList(jsonWeatherReport.getJSONArray("weather"));
+                String base = jsonWeatherReport.isNull("base") ? null : jsonWeatherReport.getString("base");
+                Main main = jsonWeatherReport.isNull("main") ? null : getMain(jsonWeatherReport.getJSONObject("main"));
+                Integer visibility = jsonWeatherReport.isNull("visibility") ? null : jsonWeatherReport.getInt("visibility");
+                Wind wind = jsonWeatherReport.isNull("wind") ? null : getWind(jsonWeatherReport.getJSONObject("wind"));
+                Clouds clouds = jsonWeatherReport.isNull("clouds") ? null : getClouds(jsonWeatherReport.getJSONObject("clouds"));
+                Timestamp dt = jsonWeatherReport.isNull("dt") ? null : new Timestamp(jsonWeatherReport.getLong("dt"));
+                Sys sys = jsonWeatherReport.isNull("sys") ? null : getSys(jsonWeatherReport.getJSONObject("sys"));
+                Integer id = jsonWeatherReport.isNull("id") ? null : jsonWeatherReport.getInt("id");
+                String name = jsonWeatherReport.isNull("name") ? null : jsonWeatherReport.getString("name");
+                Integer cod = jsonWeatherReport.isNull("cod") ? null : jsonWeatherReport.getInt("cod");
 
                 weatherReport = new WeatherReport(coord, weatherList, base, main,
-                                visibility, wind, clouds, dt, sys,
-                                id, name, cod);
+                                                  visibility, wind, clouds, dt, sys,
+                                                  id, name, cod);
             }
         } catch (JSONException | IOException ex) {
             Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
@@ -69,86 +69,66 @@ public class WeatherService {
         return null;
     }
 
-    private Coord getCoord(JSONObject jsonCoord) {
-        Coord coord = null;
+    private Coord getCoord(JSONObject jsonCoord) throws JSONException {
+        if (jsonCoord==null) return null;
+        if (jsonCoord.isNull("lat")||jsonCoord.isNull("lon")) return null;
 
-        if (jsonCoord != null) {
-            try {
-                coord = new Coord(jsonCoord.getDouble("lat"), jsonCoord.getDouble("lon"));
-            } catch (JSONException ex) {
-                Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return coord;
+        return new Coord(jsonCoord.getDouble("lat"), jsonCoord.getDouble("lon"));
     }
 
     private List<Weather> getWeatherList(JSONArray jsonWeatherList) {
-        List<Weather> weatherList = new ArrayList<>();
-        if (jsonWeatherList != null) {
-            for (int i = 0; i < jsonWeatherList.length(); i++) {
-                try {
-                    JSONObject jsonWeather = jsonWeatherList.getJSONObject(i);
-                    weatherList.add(new Weather(jsonWeather.getInt("id"),
-                            jsonWeather.getString("main"),
-                            jsonWeather.getString("description"),
-                            jsonWeather.getString("icon")));
-                } catch (JSONException ex) {
-                    Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+        if (jsonWeatherList==null) return null;
 
+        List<Weather> weatherList = new ArrayList<>();
+        for (int i = 0; i < jsonWeatherList.length(); i++) {
+            try {
+                weatherList.add(getWeather(jsonWeatherList.getJSONObject(i)));
+            } catch (JSONException ex) {}
         }
         return weatherList;
     }
 
-    private Main getMain(JSONObject jsonMain) {
-        Main main = null;
+    private Weather getWeather(JSONObject jsonWeather) throws JSONException {
+        if (jsonWeather==null) return null;
 
-        if (jsonMain != null) {
-            try {
-                main = new Main(jsonMain.getInt("temp"),
-                        jsonMain.getInt("pressure"),
-                        jsonMain.getInt("humidity"),
-                        jsonMain.getInt("temp_min"),
-                        jsonMain.getInt("temp_max"));
-            } catch (JSONException ex) {
-                Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        return main;
+        return new Weather(jsonWeather.isNull("id") ? null : jsonWeather.getInt("id"),
+                           jsonWeather.isNull("main") ? null : jsonWeather.getString("main"),
+                           jsonWeather.isNull("description") ? null : jsonWeather.getString("description"),
+                           jsonWeather.isNull("icon") ? null : jsonWeather.getString("icon"));
     }
 
-    private Wind getWind(JSONObject jsonWind) {
-        Wind wind = null;
+    private Main getMain(JSONObject jsonMain) throws JSONException {
+        if (jsonMain==null) return null;
 
-        if (jsonWind != null) {
-            try {
-                wind = new Wind(jsonWind.getDouble("speed"),
-                        jsonWind.getDouble("deg"));
-            } catch (JSONException ex) {
-                Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        return wind;
+        return new Main(jsonMain.isNull("temp") ? null : jsonMain.getInt("temp"),
+                        jsonMain.isNull("pressure") ? null : jsonMain.getInt("pressure"),
+                        jsonMain.isNull("humidity") ? null : jsonMain.getInt("humidity"),
+                        jsonMain.isNull("temp_min") ? null : jsonMain.getInt("temp_min"),
+                        jsonMain.isNull("temp_max") ? null : jsonMain.getInt("temp_max"));
     }
 
-    private Sys getSys(JSONObject jsonSys) {
-        Sys sys = null;
+    private Wind getWind(JSONObject jsonWind) throws JSONException {
+        if (jsonWind==null) return null;
+        if (jsonWind.isNull("speed")||jsonWind.isNull("deg")) return null;
 
-        if (jsonSys != null) {
-            try {
-                sys = new Sys(jsonSys.getInt("type"),
-                        jsonSys.getInt("id"),
-                        jsonSys.getString("country"),
-                        new Timestamp(jsonSys.getLong("sunrise")),
-                        new Timestamp(jsonSys.getLong("sunset")));
-            } catch (JSONException ex) {
-                Logger.getLogger(WeatherService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        return new Wind(jsonWind.getDouble("speed"),
+                         jsonWind.getDouble("deg"));
+    }
 
-        return sys;
+    private Clouds getClouds(JSONObject jsonClouds) throws JSONException {
+        if (jsonClouds==null) return null;
+
+        return jsonClouds.isNull("all") ? null : new Clouds(jsonClouds.getInt("all"));
+    }
+
+    private Sys getSys(JSONObject jsonSys) throws JSONException {
+        if (jsonSys == null) return null;
+
+        return new Sys(jsonSys.isNull("type") ? null : jsonSys.getInt("type"),
+                       jsonSys.isNull("id") ? null : jsonSys.getInt("id"),
+                       jsonSys.isNull("country") ? null : jsonSys.getString("country"),
+                       jsonSys.isNull("sunrise") ? null : new Timestamp(jsonSys.getLong("sunrise")),
+                       jsonSys.isNull("sunset") ? null : new Timestamp(jsonSys.getLong("sunset")));
+
     }
 }
